@@ -1,0 +1,151 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Wallet, Coins, TrendingUp, Users, Pickaxe, DollarSign } from "lucide-react";
+import { Layout } from "@/components/Layout";
+
+export default function Home() {
+  // Mock data - will be replaced with Supabase data
+  const walletBalance = 2450.80;
+  const zukaBalance = 1205.5;
+  const totalMined = 850.25;
+  const activeInvestments = 3;
+  const socialPoints = 127;
+  const currency = "USD";
+
+  return (
+    <Layout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Marco-net Farming
+          </h1>
+          <p className="text-muted-foreground">Your Digital Farming Empire</p>
+        </div>
+
+        {/* Main Wallet Card */}
+        <Card className="bg-gradient-primary text-primary-foreground border-0 shadow-glow">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                Wallet Balance
+              </span>
+              <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                {currency}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold mb-2">
+              ${walletBalance.toLocaleString()}
+            </div>
+            <p className="text-primary-foreground/80 text-sm">
+              Click to toggle currency
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* ZukaCoin Balance */}
+        <Card className="border-accent/50 shadow-md">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-accent">
+              <Coins className="h-5 w-5" />
+              ZukaCoin Balance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-accent">
+                  {zukaBalance.toLocaleString()} ZC
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  ≈ ${(zukaBalance * 0.45).toFixed(2)} USD
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                className="bg-accent hover:bg-accent/90 text-accent-foreground"
+              >
+                <Pickaxe className="h-4 w-4 mr-1" />
+                Mine More
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="border-success/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-success">
+                <Pickaxe className="h-4 w-4" />
+                Total Mined
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold">{totalMined} ZC</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-warning/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-warning">
+                <TrendingUp className="h-4 w-4" />
+                Investments
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold">{activeInvestments} Active</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-info/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-info">
+                <Users className="h-4 w-4" />
+                Social Points
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold">{socialPoints}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-secondary/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-secondary">
+                <DollarSign className="h-4 w-4" />
+                Today's Profit
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold text-success">+$24.50</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <Button className="h-auto py-4 bg-gradient-secondary">
+              <div className="text-center">
+                <TrendingUp className="h-6 w-6 mx-auto mb-1" />
+                <div className="text-sm font-medium">New Investment</div>
+              </div>
+            </Button>
+            <Button variant="outline" className="h-auto py-4">
+              <div className="text-center">
+                <Users className="h-6 w-6 mx-auto mb-1" />
+                <div className="text-sm font-medium">Social Hub</div>
+              </div>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}
