@@ -52,7 +52,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const Icon = currentPageData.icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background-muted flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md mx-auto p-8 border-0 shadow-2xl bg-card/95 backdrop-blur">
         <div className="text-center space-y-8">
           {/* Page Indicator */}
