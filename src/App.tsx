@@ -14,6 +14,7 @@ import Crypto from "./pages/Crypto";
 import Learn from "./pages/Learn";
 import Investment from "./pages/Investment";
 import Adverts from "./pages/Adverts";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +75,7 @@ const AppContent = () => {
       <Route path="/learn" element={<Learn />} />
       <Route path="/investment" element={<Investment />} />
       <Route path="/adverts" element={<Adverts />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
