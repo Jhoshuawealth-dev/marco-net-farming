@@ -14,6 +14,130 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_billing: {
+        Row: {
+          ad_id: string | null
+          admin_share: number | null
+          cost_per_view: number | null
+          created_at: string | null
+          id: string
+          total_spent: number | null
+        }
+        Insert: {
+          ad_id?: string | null
+          admin_share?: number | null
+          cost_per_view?: number | null
+          created_at?: string | null
+          id?: string
+          total_spent?: number | null
+        }
+        Update: {
+          ad_id?: string | null
+          admin_share?: number | null
+          cost_per_view?: number | null
+          created_at?: string | null
+          id?: string
+          total_spent?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_billing_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_impressions: {
+        Row: {
+          ad_id: string | null
+          created_at: string | null
+          id: string
+          impression_type: string
+          user_id: string | null
+        }
+        Insert: {
+          ad_id?: string | null
+          created_at?: string | null
+          id?: string
+          impression_type: string
+          user_id?: string | null
+        }
+        Update: {
+          ad_id?: string | null
+          created_at?: string | null
+          id?: string
+          impression_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_impressions_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_impressions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads: {
+        Row: {
+          ad_type: string | null
+          budget: number
+          caption: string | null
+          content_url: string
+          created_at: string | null
+          id: string
+          spent: number | null
+          status: string | null
+          target_age_range: unknown | null
+          target_country: string[] | null
+          user_id: string | null
+        }
+        Insert: {
+          ad_type?: string | null
+          budget: number
+          caption?: string | null
+          content_url: string
+          created_at?: string | null
+          id?: string
+          spent?: number | null
+          status?: string | null
+          target_age_range?: unknown | null
+          target_country?: string[] | null
+          user_id?: string | null
+        }
+        Update: {
+          ad_type?: string | null
+          budget?: number
+          caption?: string | null
+          content_url?: string
+          created_at?: string | null
+          id?: string
+          spent?: number | null
+          status?: string | null
+          target_age_range?: unknown | null
+          target_country?: string[] | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           created_at: string | null
@@ -191,6 +315,27 @@ export type Database = {
           updated_at?: string
           user_id?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      revenue_records: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          source: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          source: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          source?: string
         }
         Relationships: []
       }
