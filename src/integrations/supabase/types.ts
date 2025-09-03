@@ -14,6 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          splash_completed: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          splash_completed?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          splash_completed?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      currency_rates: {
+        Row: {
+          currency_code: string
+          id: string
+          rate_to_usd: number
+          updated_at: string | null
+        }
+        Insert: {
+          currency_code: string
+          id?: string
+          rate_to_usd: number
+          updated_at?: string | null
+        }
+        Update: {
+          currency_code?: string
+          id?: string
+          rate_to_usd?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      investment_records: {
+        Row: {
+          created_at: string | null
+          id: string
+          investment_name: string
+          profit: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          investment_name: string
+          profit?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          investment_name?: string
+          profit?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mining_records: {
+        Row: {
+          created_at: string | null
+          date_mined: string
+          id: string
+          mined_amount: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date_mined?: string
+          id?: string
+          mined_amount: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date_mined?: string
+          id?: string
+          mined_amount?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mining_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -74,6 +191,77 @@ export type Database = {
           updated_at?: string
           user_id?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      social_engagement: {
+        Row: {
+          comments: number
+          created_at: string | null
+          id: string
+          likes: number
+          shares: number
+          user_id: string
+        }
+        Insert: {
+          comments?: number
+          created_at?: string | null
+          id?: string
+          likes?: number
+          shares?: number
+          user_id: string
+        }
+        Update: {
+          comments?: number
+          created_at?: string | null
+          id?: string
+          likes?: number
+          shares?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_engagement_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          country: string
+          created_at: string | null
+          currency_code: string
+          email: string
+          full_name: string
+          id: string
+          updated_at: string | null
+          wallet_balance: number
+          zuka_balance: number
+        }
+        Insert: {
+          country: string
+          created_at?: string | null
+          currency_code: string
+          email: string
+          full_name: string
+          id?: string
+          updated_at?: string | null
+          wallet_balance?: number
+          zuka_balance?: number
+        }
+        Update: {
+          country?: string
+          created_at?: string | null
+          currency_code?: string
+          email?: string
+          full_name?: string
+          id?: string
+          updated_at?: string | null
+          wallet_balance?: number
+          zuka_balance?: number
         }
         Relationships: []
       }
