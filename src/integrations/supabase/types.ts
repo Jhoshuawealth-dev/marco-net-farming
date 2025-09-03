@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          date_of_birth: string | null
+          display_name: string | null
+          followers_count: number | null
+          following_count: number | null
+          id: string
+          location: string | null
+          occupation: string | null
+          phone: string | null
+          posts_count: number | null
+          privacy_settings: Json | null
+          social_links: Json | null
+          splash_completed: boolean | null
+          updated_at: string
+          user_id: string
+          website: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          display_name?: string | null
+          followers_count?: number | null
+          following_count?: number | null
+          id?: string
+          location?: string | null
+          occupation?: string | null
+          phone?: string | null
+          posts_count?: number | null
+          privacy_settings?: Json | null
+          social_links?: Json | null
+          splash_completed?: boolean | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          display_name?: string | null
+          followers_count?: number | null
+          following_count?: number | null
+          id?: string
+          location?: string | null
+          occupation?: string | null
+          phone?: string | null
+          posts_count?: number | null
+          privacy_settings?: Json | null
+          social_links?: Json | null
+          splash_completed?: boolean | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
