@@ -23,16 +23,15 @@ interface Profile {
   phone: string | null;
   location: string | null;
   date_of_birth: string | null;
-  gender: string | null;
   occupation: string | null;
   website: string | null;
   social_links: any;
-  preferences: any;
   privacy_settings: any;
-  is_verified: boolean;
   followers_count: number;
   following_count: number;
   posts_count: number;
+  created_at: string;
+  updated_at: string;
 }
 
 const Profile = () => {
@@ -54,10 +53,12 @@ const Profile = () => {
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setProfile(data);
+      if (data) {
+        setProfile(data);
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({
@@ -114,7 +115,6 @@ const Profile = () => {
       phone,
       location,
       date_of_birth,
-      gender,
       occupation,
       website
     } = profile;
@@ -125,7 +125,6 @@ const Profile = () => {
       phone,
       location,
       date_of_birth,
-      gender,
       occupation,
       website
     });
@@ -205,11 +204,6 @@ const Profile = () => {
                       <h2 className="text-2xl font-bold text-foreground">
                         {profile.display_name || 'Unknown User'}
                       </h2>
-                      {profile.is_verified && (
-                        <Badge variant="secondary" className="bg-primary/10 text-primary">
-                          Verified
-                        </Badge>
-                      )}
                     </div>
                     <p className="text-muted-foreground mb-3">{profile.bio || 'No bio available'}</p>
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -316,20 +310,6 @@ const Profile = () => {
                       placeholder="https://your-website.com"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="gender">Gender</Label>
-                    <Select value={profile.gender || ''} onValueChange={(value) => handleInputChange('gender', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                        <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
                 <div>
                   <Label htmlFor="bio">Bio</Label>
@@ -428,12 +408,6 @@ const Profile = () => {
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Email</span>
                     <span className="font-semibold">{user?.email}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Verified</span>
-                    <Badge variant={profile.is_verified ? "default" : "secondary"}>
-                      {profile.is_verified ? "Yes" : "No"}
-                    </Badge>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Member Since</span>

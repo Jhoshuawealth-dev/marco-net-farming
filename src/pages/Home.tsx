@@ -3,15 +3,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, Coins, TrendingUp, Users, Pickaxe, DollarSign } from "lucide-react";
 import { Layout } from "@/components/Layout";
+import { useUserData } from "@/hooks/useUserData";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
-  // Mock data - will be replaced with Supabase data
-  const walletBalance = 2450.80;
-  const zukaBalance = 1205.5;
-  const totalMined = 850.25;
-  const activeInvestments = 3;
-  const socialPoints = 127;
-  const currency = "USD";
+  const { userData, loading } = useUserData();
+  const navigate = useNavigate();
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const walletBalance = userData?.walletBalance || 0;
+  const zukaBalance = userData?.zukaBalance || 0;
+  const currency = userData?.currencyCode || "USD";
 
   return (
     <Layout>
@@ -68,6 +79,7 @@ export default function Home() {
               <Button 
                 size="sm" 
                 className="bg-accent hover:bg-accent/90 text-accent-foreground"
+                onClick={() => navigate('/crypto')}
               >
                 <Pickaxe className="h-4 w-4 mr-1" />
                 Mine More
@@ -86,7 +98,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl font-bold">{totalMined} ZC</div>
+              <div className="text-xl font-bold">{zukaBalance.toFixed(2)} ZC</div>
             </CardContent>
           </Card>
 
@@ -98,7 +110,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl font-bold">{activeInvestments} Active</div>
+              <div className="text-xl font-bold">0 Active</div>
             </CardContent>
           </Card>
 
@@ -110,7 +122,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl font-bold">{socialPoints}</div>
+              <div className="text-xl font-bold">0</div>
             </CardContent>
           </Card>
 
@@ -122,7 +134,7 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl font-bold text-success">+$24.50</div>
+              <div className="text-xl font-bold text-success">$0.00</div>
             </CardContent>
           </Card>
         </div>
@@ -131,13 +143,20 @@ export default function Home() {
         <div className="space-y-3">
           <h3 className="text-lg font-semibold">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-3">
-            <Button className="h-auto py-4 bg-gradient-secondary">
+            <Button 
+              className="h-auto py-4 bg-gradient-secondary"
+              onClick={() => navigate('/investment')}
+            >
               <div className="text-center">
                 <TrendingUp className="h-6 w-6 mx-auto mb-1" />
                 <div className="text-sm font-medium">New Investment</div>
               </div>
             </Button>
-            <Button variant="outline" className="h-auto py-4">
+            <Button 
+              variant="outline" 
+              className="h-auto py-4"
+              onClick={() => navigate('/social')}
+            >
               <div className="text-center">
                 <Users className="h-6 w-6 mx-auto mb-1" />
                 <div className="text-sm font-medium">Social Hub</div>

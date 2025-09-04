@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, country: string, currencyCode: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   checkSplashCompleted: () => Promise<boolean>;
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, displayName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, country: string, currencyCode: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -57,7 +57,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          display_name: displayName
+          full_name: fullName,
+          country: country,
+          currency_code: currencyCode
         }
       }
     });
@@ -80,10 +82,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return false;
     
     const { data } = await supabase
-      .from('profiles')
+      .from('app_settings')
       .select('splash_completed')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
     
     return data?.splash_completed || false;
   };
@@ -92,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
     
     await supabase
-      .from('profiles')
+      .from('app_settings')
       .update({ splash_completed: true })
       .eq('user_id', user.id);
   };

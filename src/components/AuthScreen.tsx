@@ -23,7 +23,9 @@ const AuthScreen: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    displayName: ''
+    fullName: '',
+    country: '',
+    currencyCode: 'USD'
   });
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -80,7 +82,7 @@ const AuthScreen: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await signUp(signupForm.email, signupForm.password, signupForm.displayName);
+      const { error } = await signUp(signupForm.email, signupForm.password, signupForm.fullName, signupForm.country, signupForm.currencyCode);
       
       if (error) {
         toast({
@@ -91,8 +93,10 @@ const AuthScreen: React.FC = () => {
       } else {
         toast({
           title: "Welcome to Marco-net!",
-          description: "Account created successfully. Please check your email to verify your account."
+          description: "Account created successfully. You can now log in immediately."
         });
+        setActiveTab('login');
+        setLoginForm({ email: signupForm.email, password: '' });
       }
     } catch (error) {
       toast({
@@ -183,19 +187,49 @@ const AuthScreen: React.FC = () => {
             <TabsContent value="signup" className="space-y-6">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Display Name</Label>
+                  <Label htmlFor="signup-name">Full Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       id="signup-name"
                       type="text"
-                      placeholder="Your display name"
-                      value={signupForm.displayName}
-                      onChange={(e) => setSignupForm(prev => ({ ...prev, displayName: e.target.value }))}
+                      placeholder="Your full name"
+                      value={signupForm.fullName}
+                      onChange={(e) => setSignupForm(prev => ({ ...prev, fullName: e.target.value }))}
                       className="pl-10"
                       required
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-country">Country</Label>
+                  <Input
+                    id="signup-country"
+                    type="text"
+                    placeholder="Your country"
+                    value={signupForm.country}
+                    onChange={(e) => setSignupForm(prev => ({ ...prev, country: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-currency">Currency</Label>
+                  <select
+                    id="signup-currency"
+                    value={signupForm.currencyCode}
+                    onChange={(e) => setSignupForm(prev => ({ ...prev, currencyCode: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground"
+                    required
+                  >
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="GBP">GBP - British Pound</option>
+                    <option value="NGN">NGN - Nigerian Naira</option>
+                    <option value="CAD">CAD - Canadian Dollar</option>
+                    <option value="AUD">AUD - Australian Dollar</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">

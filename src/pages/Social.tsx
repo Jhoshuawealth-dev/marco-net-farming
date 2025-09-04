@@ -1,35 +1,105 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Share2, Plus, Users, Trophy } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
+import { Heart, MessageCircle, Share2, Trophy, Users, ThumbsUp, Gift, Plus } from "lucide-react";
 import { Layout } from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Social() {
-  const posts = [
-    {
-      id: 1,
-      user: "FarmKing",
-      avatar: "👨‍🌾",
-      content: "Just harvested my first virtual tomatoes! 🍅 Earned 25 ZukaCoins from this week's farming simulation.",
-      likes: 42,
-      comments: 8,
-      shares: 3,
-      time: "2h ago",
-      rewards: 15
-    },
-    {
-      id: 2,
-      user: "CryptoFarmer",
-      avatar: "👩‍🌾",
-      content: "My investment portfolio is looking green! 📈 Up 12% this month thanks to the community tips.",
-      likes: 28,
-      comments: 5,
-      shares: 7,
-      time: "4h ago",
-      rewards: 22
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newPost, setNewPost] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          content,
+          media_url,
+          created_at,
+          user_id,
+          profiles:user_id (display_name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleCreatePost = async () => {
+    if (!newPost.trim() || !user) return;
+
+    setIsPosting(true);
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.id,
+          content: newPost
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Post Created!",
+        description: "Your post has been shared with the community."
+      });
+
+      setNewPost('');
+      fetchPosts();
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create post. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  const handleEngagement = async (postId: string, type: 'like' | 'comment' | 'share') => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('social_engagement')
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          type: type
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Reward Earned!",
+        description: `You earned ${type === 'like' ? '50' : type === 'comment' ? '20' : '100'} credits for ${type}!`
+      });
+    } catch (error) {
+      console.error('Error recording engagement:', error);
+    }
+  };
 
   return (
     <Layout>
@@ -40,10 +110,6 @@ export default function Social() {
             <h1 className="text-2xl font-bold">Social Hub</h1>
             <p className="text-muted-foreground">Connect, Share, Earn Rewards</p>
           </div>
-          <Button className="bg-gradient-primary">
-            <Plus className="h-4 w-4 mr-2" />
-            Post
-          </Button>
         </div>
 
         {/* Stats Bar */}
@@ -51,70 +117,123 @@ export default function Social() {
           <Card className="text-center">
             <CardContent className="pt-4">
               <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-bold">1,247</div>
+              <div className="text-lg font-bold">0</div>
               <div className="text-sm text-muted-foreground">Followers</div>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
               <Heart className="h-6 w-6 mx-auto mb-2 text-red-500" />
-              <div className="text-lg font-bold">3,892</div>
+              <div className="text-lg font-bold">0</div>
               <div className="text-sm text-muted-foreground">Total Likes</div>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
               <Trophy className="h-6 w-6 mx-auto mb-2 text-secondary" />
-              <div className="text-lg font-bold">127</div>
+              <div className="text-lg font-bold">0</div>
               <div className="text-sm text-muted-foreground">Reward Points</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Posts Feed */}
+        {/* Create Post */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Share Something
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              placeholder="What's on your mind about farming?"
+              value={newPost}
+              onChange={(e) => setNewPost(e.target.value)}
+              rows={3}
+            />
+            <Button 
+              onClick={handleCreatePost}
+              disabled={!newPost.trim() || isPosting}
+              className="w-full"
+            >
+              {isPosting ? "Posting..." : "Share Post"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Community Feed */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Community Feed</h3>
           
-          {posts.map((post) => (
-            <Card key={post.id} className="shadow-md">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback>{post.avatar}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-semibold">{post.user}</div>
-                      <div className="text-sm text-muted-foreground">{post.time}</div>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="bg-success/10 text-success border-success/20">
-                    +{post.rewards} ZC
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-4 text-sm leading-relaxed">{post.content}</p>
-                
-                <div className="flex items-center justify-between border-t pt-3">
-                  <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-red-500">
-                      <Heart className="h-4 w-4 mr-1" />
-                      {post.likes}
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-blue-500">
-                      <MessageCircle className="h-4 w-4 mr-1" />
-                      {post.comments}
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-green-500">
-                      <Share2 className="h-4 w-4 mr-1" />
-                      {post.shares}
-                    </Button>
-                  </div>
-                </div>
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : posts.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            posts.map((post) => (
+              <Card key={post.id} className="shadow-md">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback>
+                          {post.profiles?.display_name?.[0]?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-semibold">{post.profiles?.display_name || 'Anonymous'}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(post.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="mb-4 text-sm leading-relaxed">{post.content}</p>
+                  
+                  <div className="flex items-center justify-between border-t pt-3">
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-muted-foreground hover:text-red-500"
+                        onClick={() => handleEngagement(post.id, 'like')}
+                      >
+                        <Heart className="h-4 w-4 mr-1" />
+                        Like (+50)
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-muted-foreground hover:text-blue-500"
+                        onClick={() => handleEngagement(post.id, 'comment')}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        Comment (+20)
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-muted-foreground hover:text-green-500"
+                        onClick={() => handleEngagement(post.id, 'share')}
+                      >
+                        <Share2 className="h-4 w-4 mr-1" />
+                        Share (+100)
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Community Challenges */}
