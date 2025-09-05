@@ -25,7 +25,7 @@ export default function Social() {
   const fetchPosts = async () => {
     try {
       const { data, error } = await supabase
-        .from('posts')
+        .from('posts' as any)
         .select(`
           id,
           content,
@@ -51,7 +51,7 @@ export default function Social() {
     setIsPosting(true);
     try {
       const { error } = await supabase
-        .from('posts')
+        .from('posts' as any)
         .insert({
           user_id: user.id,
           content: newPost

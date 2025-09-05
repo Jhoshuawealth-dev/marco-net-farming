@@ -138,6 +138,33 @@ export type Database = {
           },
         ]
       }
+      adverts: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          is_boosted: boolean | null
+          media_url: string | null
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          is_boosted?: boolean | null
+          media_url?: string | null
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          is_boosted?: boolean | null
+          media_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string | null
@@ -167,6 +194,57 @@ export type Database = {
           },
         ]
       }
+      course_progress: {
+        Row: {
+          completed: boolean | null
+          course_id: string | null
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      courses: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          reward: number | null
+          title: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reward?: number | null
+          title: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reward?: number | null
+          title?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       currency_rates: {
         Row: {
           currency_code: string
@@ -185,6 +263,54 @@ export type Database = {
           id?: string
           rate_to_usd?: number
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      event_registrations: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_date: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          title?: string
         }
         Relationships: []
       }
@@ -254,6 +380,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      posts: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          media_url: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -345,7 +495,9 @@ export type Database = {
           created_at: string | null
           id: string
           likes: number
+          post_id: string | null
           shares: number
+          type: string | null
           user_id: string
         }
         Insert: {
@@ -353,7 +505,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           likes?: number
+          post_id?: string | null
           shares?: number
+          type?: string | null
           user_id: string
         }
         Update: {
@@ -361,7 +515,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           likes?: number
+          post_id?: string | null
           shares?: number
+          type?: string | null
           user_id?: string
         }
         Relationships: [
@@ -441,6 +597,10 @@ export type Database = {
           user_id: string
           website: string | null
         }
+      }
+      reward_for_action: {
+        Args: { action: string }
+        Returns: number
       }
     }
     Enums: {
