@@ -140,27 +140,42 @@ export type Database = {
       }
       adverts: {
         Row: {
+          budget: number | null
           caption: string | null
           created_at: string
+          end_date: string | null
           id: string
           is_boosted: boolean | null
           media_url: string | null
+          spent: number | null
+          start_date: string | null
+          status: string | null
           user_id: string
         }
         Insert: {
+          budget?: number | null
           caption?: string | null
           created_at?: string
+          end_date?: string | null
           id?: string
           is_boosted?: boolean | null
           media_url?: string | null
+          spent?: number | null
+          start_date?: string | null
+          status?: string | null
           user_id: string
         }
         Update: {
+          budget?: number | null
           caption?: string | null
           created_at?: string
+          end_date?: string | null
           id?: string
           is_boosted?: boolean | null
           media_url?: string | null
+          spent?: number | null
+          start_date?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []
