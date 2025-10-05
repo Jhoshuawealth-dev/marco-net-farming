@@ -9,7 +9,7 @@ import { Layout } from "@/components/Layout";
 export default function Crypto() {
   const [isMining, setIsMining] = useState(false);
   const [miningProgress, setMiningProgress] = useState(0);
-  const [dailyMined, setDailyMined] = useState(45.2);
+  const [dailyMined, setDailyMined] = useState(0);
 
   const startMining = () => {
     setIsMining(true);
@@ -48,7 +48,7 @@ export default function Crypto() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-accent">{dailyMined.toFixed(1)} ZC</div>
-              <p className="text-xs text-muted-foreground">+15% from yesterday</p>
+              <p className="text-xs text-muted-foreground">Start mining to earn</p>
             </CardContent>
           </Card>
           
@@ -118,7 +118,7 @@ export default function Crypto() {
               </div>
               <div className="text-center">
                 <Award className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-                <div className="text-sm font-medium">Level 3</div>
+                <div className="text-sm font-medium">Level 1</div>
                 <div className="text-xs text-muted-foreground">Miner rank</div>
               </div>
             </div>
@@ -131,46 +131,10 @@ export default function Crypto() {
             <CardTitle className="text-lg">Recent Mining Sessions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {[
-                { time: "2 hours ago", amount: 2.5, duration: "5:00" },
-                { time: "5 hours ago", amount: 2.5, duration: "5:00" },
-                { time: "8 hours ago", amount: 2.5, duration: "5:00" }
-              ].map((session, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
-                  <div>
-                    <div className="font-medium">Mining Session</div>
-                    <div className="text-sm text-muted-foreground">{session.time}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium text-accent">+{session.amount} ZC</div>
-                    <div className="text-sm text-muted-foreground">{session.duration}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Upgrade Options */}
-        <Card className="bg-gradient-secondary text-secondary-foreground border-0">
-          <CardHeader>
-            <CardTitle>Upgrade Your Mining</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-semibold">Premium Mining Tools</div>
-                  <div className="text-sm opacity-90">Increase mining rate by 50%</div>
-                </div>
-                <Badge variant="outline" className="bg-white/20 border-white/30 text-white">
-                  50 ZC
-                </Badge>
-              </div>
-              <Button size="sm" variant="outline" className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30">
-                Upgrade Now
-              </Button>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                Your mining history will appear here
+              </p>
             </div>
           </CardContent>
         </Card>
