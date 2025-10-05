@@ -554,6 +554,9 @@ export type Database = {
           full_name: string
           id: string
           updated_at: string | null
+          verification_document_type: string | null
+          verification_document_url: string | null
+          verification_status: string | null
           wallet_balance: number
           zuka_balance: number
         }
@@ -565,6 +568,9 @@ export type Database = {
           full_name: string
           id?: string
           updated_at?: string | null
+          verification_document_type?: string | null
+          verification_document_url?: string | null
+          verification_status?: string | null
           wallet_balance?: number
           zuka_balance?: number
         }
@@ -576,6 +582,9 @@ export type Database = {
           full_name?: string
           id?: string
           updated_at?: string | null
+          verification_document_type?: string | null
+          verification_document_url?: string | null
+          verification_status?: string | null
           wallet_balance?: number
           zuka_balance?: number
         }

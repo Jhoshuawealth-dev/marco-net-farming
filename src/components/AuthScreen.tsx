@@ -6,7 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, User, Leaf } from 'lucide-react';
+import { Loader2, Mail, Lock, User, Leaf, Upload, FileText } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const AuthScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +27,9 @@ const AuthScreen: React.FC = () => {
     confirmPassword: '',
     fullName: '',
     country: '',
-    currencyCode: 'USD'
+    currencyCode: 'USD',
+    verificationDocType: '',
+    verificationDocFile: null as File | null
   });
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -79,25 +83,90 @@ const AuthScreen: React.FC = () => {
       return;
     }
 
+    if (!signupForm.verificationDocType) {
+      toast({
+        title: "Verification Required",
+        description: "Please select a verification document type",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!signupForm.verificationDocFile) {
+      toast({
+        title: "Document Required",
+        description: "Please upload your verification document",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const { error } = await signUp(signupForm.email, signupForm.password, signupForm.fullName, signupForm.country, signupForm.currencyCode);
+      // First, sign up the user
+      const { error: signUpError } = await signUp(
+        signupForm.email, 
+        signupForm.password, 
+        signupForm.fullName, 
+        signupForm.country, 
+        signupForm.currencyCode
+      );
       
-      if (error) {
+      if (signUpError) {
         toast({
           title: "Registration Failed",
-          description: error.message,
+          description: signUpError.message,
           variant: "destructive"
         });
-      } else {
-        toast({
-          title: "Welcome to Marco-net!",
-          description: "Account created successfully. You can now log in immediately."
-        });
-        setActiveTab('login');
-        setLoginForm({ email: signupForm.email, password: '' });
+        return;
       }
+
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user && signupForm.verificationDocFile) {
+        // Upload the verification document
+        const fileExt = signupForm.verificationDocFile.name.split('.').pop();
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('verification-documents')
+          .upload(fileName, signupForm.verificationDocFile);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          toast({
+            title: "Document Upload Failed",
+            description: "Account created but document upload failed. Please contact support.",
+            variant: "destructive"
+          });
+        } else {
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('verification-documents')
+            .getPublicUrl(fileName);
+
+          // Update user record with verification info
+          await supabase
+            .from('users')
+            .update({
+              verification_document_type: signupForm.verificationDocType,
+              verification_document_url: publicUrl,
+              verification_status: 'pending'
+            })
+            .eq('id', user.id);
+
+          toast({
+            title: "Welcome to Marco-net!",
+            description: "Account created successfully. Your verification is pending."
+          });
+        }
+      }
+
+      setActiveTab('login');
+      setLoginForm({ email: signupForm.email, password: '' });
+      
     } catch (error) {
       toast({
         title: "Error",
@@ -106,6 +175,35 @@ const AuthScreen: React.FC = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload a file smaller than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a JPG, PNG, or PDF file",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setSignupForm(prev => ({ ...prev, verificationDocFile: file }));
     }
   };
 
@@ -230,6 +328,55 @@ const AuthScreen: React.FC = () => {
                     <option value="CAD">CAD - Canadian Dollar</option>
                     <option value="AUD">AUD - Australian Dollar</option>
                   </select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="verification-type">Verification Document Type</Label>
+                  <Select
+                    value={signupForm.verificationDocType}
+                    onValueChange={(value) => setSignupForm(prev => ({ ...prev, verificationDocType: value }))}
+                    required
+                  >
+                    <SelectTrigger id="verification-type" className="w-full">
+                      <SelectValue placeholder="Select document type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="national_id">National ID Card</SelectItem>
+                      <SelectItem value="drivers_license">Driver's License</SelectItem>
+                      <SelectItem value="voters_card">Voter's Card</SelectItem>
+                      <SelectItem value="international_passport">International Passport</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="verification-doc">Upload Verification Document</Label>
+                  <div className="relative">
+                    <Input
+                      id="verification-doc"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,application/pdf"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      required
+                    />
+                    <label
+                      htmlFor="verification-doc"
+                      className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-muted/30"
+                    >
+                      {signupForm.verificationDocFile ? (
+                        <div className="flex items-center gap-2 text-sm">
+                          <FileText className="w-4 h-4 text-primary" />
+                          <span className="text-foreground">{signupForm.verificationDocFile.name}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Upload className="w-4 h-4" />
+                          <span>Click to upload (JPG, PNG, PDF - Max 5MB)</span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
