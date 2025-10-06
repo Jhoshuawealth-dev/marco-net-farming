@@ -49,6 +49,41 @@ export type Database = {
           },
         ]
       }
+      ad_daily_impressions: {
+        Row: {
+          ad_id: string
+          created_at: string | null
+          id: string
+          impression_count: number | null
+          impression_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string | null
+          id?: string
+          impression_count?: number | null
+          impression_date?: string
+          updated_at?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string | null
+          id?: string
+          impression_count?: number | null
+          impression_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_daily_impressions_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "adverts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ad_impressions: {
         Row: {
           ad_id: string | null
@@ -437,6 +472,7 @@ export type Database = {
       }
       posts: {
         Row: {
+          approval_status: string | null
           content: string | null
           created_at: string
           id: string
@@ -444,6 +480,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          approval_status?: string | null
           content?: string | null
           created_at?: string
           id?: string
@@ -451,6 +488,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          approval_status?: string | null
           content?: string | null
           created_at?: string
           id?: string
@@ -634,6 +672,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_show_ad_today: {
+        Args: { ad_uuid: string }
+        Returns: boolean
+      }
       can_view_profile: {
         Args: { profile_user_id: string }
         Returns: boolean
@@ -668,6 +710,10 @@ export type Database = {
           user_id: string
           website: string | null
         }
+      }
+      increment_ad_impression: {
+        Args: { ad_uuid: string }
+        Returns: undefined
       }
       increment_daily_limit: {
         Args: { limit_type: string }

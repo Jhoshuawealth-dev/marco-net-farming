@@ -87,8 +87,10 @@ export default function Social() {
           media_url,
           created_at,
           user_id,
+          approval_status,
           profiles:user_id (display_name)
         `)
+        .eq('approval_status', 'approved')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -123,19 +125,35 @@ export default function Social() {
     }
   };
 
-  // Combine posts and ads for feed display
+  // Combine posts and ads for feed display (Facebook-style)
   useEffect(() => {
     const combinedFeed = [];
     let adIndex = 0;
     
+    // For each ad, we'll show it up to 5 times throughout the feed
+    const adsToShow: (Ad & { isAd: boolean })[] = [];
+    ads.forEach(ad => {
+      // Each ad appears 5 times in different positions
+      for (let i = 0; i < 5; i++) {
+        adsToShow.push({ ...ad, isAd: true });
+      }
+    });
+    
+    // Mix posts and ads - insert an ad every 3-4 posts
     for (let i = 0; i < posts.length; i++) {
       combinedFeed.push(posts[i]);
       
-      // Insert ad every 3 posts
-      if ((i + 1) % 3 === 0 && adIndex < ads.length) {
-        combinedFeed.push({ ...ads[adIndex], isAd: true });
+      // Insert ad after every 3 posts, but only if we have ads to show
+      if ((i + 1) % 3 === 0 && adIndex < adsToShow.length) {
+        combinedFeed.push(adsToShow[adIndex]);
         adIndex++;
       }
+    }
+    
+    // Add remaining ads at the end if any
+    while (adIndex < adsToShow.length) {
+      combinedFeed.push(adsToShow[adIndex]);
+      adIndex++;
     }
     
     setFeedItems(combinedFeed);
@@ -160,7 +178,8 @@ export default function Social() {
         .from('posts' as any)
         .insert({
           user_id: user.id,
-          content: newPost
+          content: newPost,
+          approval_status: 'pending'
         });
 
       if (error) throw error;
@@ -169,8 +188,8 @@ export default function Social() {
       await supabase.rpc('increment_daily_limit', { limit_type: 'post' });
 
       toast({
-        title: "Post Created!",
-        description: "You earned 50 ZC! Your post has been shared."
+        title: "Post Submitted!",
+        description: "Your post is pending admin approval. You'll earn 50 ZC once approved."
       });
 
       setNewPost('');
@@ -254,6 +273,10 @@ export default function Social() {
     if (!user) return;
 
     try {
+      // Increment the ad daily impression count
+      await supabase.rpc('increment_ad_impression', { ad_uuid: adId });
+      
+      // Also track individual user impression
       await supabase
         .from('ad_impressions' as any)
         .insert({
@@ -374,10 +397,10 @@ export default function Social() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold">Social Hub</h1>
-            <p className="text-muted-foreground">Connect, Share, Earn Rewards</p>
+            <h1 className="text-2xl font-bold">Social Feed</h1>
+            <p className="text-muted-foreground">Connect, share, and earn rewards</p>
           </div>
         </div>
 
@@ -416,14 +439,14 @@ export default function Social() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Textarea
-              placeholder="What's on your mind about farming?"
+              placeholder="What's on your mind?"
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
               rows={3}
             />
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                Posts today: {dailyLimits.posts}/2 • Earn 50 ZC per post
+                Posts today: {dailyLimits.posts}/2 • Earn 50 ZC per approved post
               </div>
               <Button 
                 onClick={handleCreatePost}
@@ -438,7 +461,7 @@ export default function Social() {
 
         {/* Community Feed */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Community Feed</h3>
+          <h3 className="text-lg font-semibold">Feed</h3>
           
           {loading ? (
             <div className="flex justify-center py-8">
@@ -447,7 +470,7 @@ export default function Social() {
           ) : feedItems.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
+                <p className="text-muted-foreground">No approved posts yet. Create a post and wait for admin approval!</p>
               </CardContent>
             </Card>
           ) : (
@@ -455,24 +478,21 @@ export default function Social() {
           )}
         </div>
 
-        {/* Community Challenges */}
+        {/* Info Card */}
         <Card className="bg-gradient-secondary text-secondary-foreground border-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Trophy className="h-5 w-5" />
-              Weekly Challenge
+              How to Earn
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <div className="text-lg font-semibold">Share Your Best Investment Tip</div>
-              <p className="text-sm opacity-90">Post your most valuable investment advice and earn up to 100 ZukaCoins!</p>
-              <div className="flex items-center justify-between mt-4">
-                <div className="text-sm">Ends in 3 days</div>
-                <Button size="sm" variant="outline" className="bg-white/20 border-white/30 text-white hover:bg-white/30">
-                  Participate
-                </Button>
-              </div>
+              <div className="text-sm">• Create posts: 50 ZC (pending approval)</div>
+              <div className="text-sm">• Like posts: 20 ZC (max 10/day)</div>
+              <div className="text-sm">• Comment: 20 ZC (max 10/day)</div>
+              <div className="text-sm">• Share posts: 100 ZC (unlimited)</div>
+              <p className="text-xs opacity-90 mt-4">All posts require admin approval before appearing in the feed.</p>
             </div>
           </CardContent>
         </Card>
