@@ -140,6 +140,7 @@ export type Database = {
       }
       adverts: {
         Row: {
+          approval_status: string | null
           budget: number | null
           caption: string | null
           created_at: string
@@ -147,12 +148,14 @@ export type Database = {
           id: string
           is_boosted: boolean | null
           media_url: string | null
+          payment_method: string | null
           spent: number | null
           start_date: string | null
           status: string | null
           user_id: string
         }
         Insert: {
+          approval_status?: string | null
           budget?: number | null
           caption?: string | null
           created_at?: string
@@ -160,12 +163,14 @@ export type Database = {
           id?: string
           is_boosted?: boolean | null
           media_url?: string | null
+          payment_method?: string | null
           spent?: number | null
           start_date?: string | null
           status?: string | null
           user_id: string
         }
         Update: {
+          approval_status?: string | null
           budget?: number | null
           caption?: string | null
           created_at?: string
@@ -173,6 +178,7 @@ export type Database = {
           id?: string
           is_boosted?: boolean | null
           media_url?: string | null
+          payment_method?: string | null
           spent?: number | null
           start_date?: string | null
           status?: string | null
@@ -278,6 +284,39 @@ export type Database = {
           id?: string
           rate_to_usd?: number
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      daily_limits: {
+        Row: {
+          comments_given: number | null
+          created_at: string | null
+          id: string
+          likes_given: number | null
+          limit_date: string
+          posts_created: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comments_given?: number | null
+          created_at?: string | null
+          id?: string
+          likes_given?: number | null
+          limit_date?: string
+          posts_created?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comments_given?: number | null
+          created_at?: string | null
+          id?: string
+          likes_given?: number | null
+          limit_date?: string
+          posts_created?: number | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -599,6 +638,14 @@ export type Database = {
         Args: { profile_user_id: string }
         Returns: boolean
       }
+      check_daily_engagement_limit: {
+        Args: { engagement_type: string }
+        Returns: boolean
+      }
+      check_daily_post_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       filter_profile_data: {
         Args: { profile_row: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: {
@@ -621,6 +668,10 @@ export type Database = {
           user_id: string
           website: string | null
         }
+      }
+      increment_daily_limit: {
+        Args: { limit_type: string }
+        Returns: undefined
       }
       reward_for_action: {
         Args: { action: string }

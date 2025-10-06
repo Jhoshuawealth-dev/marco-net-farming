@@ -39,7 +39,8 @@ export default function Adverts() {
     caption: '',
     media_url: '',
     budget: '',
-    duration_days: '7'
+    duration_days: '7',
+    payment_method: 'zukacoin'
   });
 
   useEffect(() => {
@@ -78,13 +79,25 @@ export default function Adverts() {
       return;
     }
 
-    if (!userData || userData.walletBalance < budget) {
-      toast({
-        title: "Insufficient Balance",
-        description: `You need at least $${budget} in your wallet to create this ad.`,
-        variant: "destructive"
-      });
-      return;
+    // Check balance based on payment method
+    if (newAd.payment_method === 'wallet') {
+      if (!userData || userData.walletBalance < budget) {
+        toast({
+          title: "Insufficient Wallet Balance",
+          description: `You need at least $${budget} in your wallet.`,
+          variant: "destructive"
+        });
+        return;
+      }
+    } else if (newAd.payment_method === 'zukacoin') {
+      if (!userData || userData.zukaBalance < budget) {
+        toast({
+          title: "Insufficient ZukaCoin",
+          description: `You need at least ${budget} ZC to create this ad.`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     setIsCreating(true);
@@ -99,17 +112,27 @@ export default function Adverts() {
           caption: newAd.caption,
           media_url: newAd.media_url || null,
           budget: budget,
-          end_date: endDate.toISOString()
+          end_date: endDate.toISOString(),
+          payment_method: newAd.payment_method,
+          approval_status: 'pending'
         });
 
       if (error) throw error;
 
+      // Deduct from appropriate balance
+      if (newAd.payment_method === 'zukacoin') {
+        await supabase
+          .from('users' as any)
+          .update({ zuka_balance: userData!.zukaBalance - budget })
+          .eq('id', user.id);
+      }
+
       toast({
-        title: "Ad Created!",
-        description: `Your ad has been submitted for review. Budget of $${budget} deducted from wallet.`
+        title: "Ad Submitted!",
+        description: `Your ad is pending approval. ${budget} ${newAd.payment_method === 'zukacoin' ? 'ZC' : 'USD'} reserved.`
       });
 
-      setNewAd({ caption: '', media_url: '', budget: '', duration_days: '7' });
+      setNewAd({ caption: '', media_url: '', budget: '', duration_days: '7', payment_method: 'zukacoin' });
       setShowCreateForm(false);
       fetchUserAds();
     } catch (error: any) {
@@ -159,18 +182,31 @@ export default function Adverts() {
           </Button>
         </div>
 
-        {/* Wallet Balance */}
-        <Card className="bg-gradient-to-r from-primary/10 to-secondary/10">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <DollarSign className="h-8 w-8 text-primary" />
-              <div>
-                <div className="text-2xl font-bold">${userData?.walletBalance || 0}</div>
-                <div className="text-sm text-muted-foreground">Available Balance</div>
+        {/* Balance Cards */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="bg-gradient-to-r from-primary/10 to-secondary/10">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <DollarSign className="h-8 w-8 text-primary" />
+                <div>
+                  <div className="text-2xl font-bold">{userData?.zukaBalance || 0} ZC</div>
+                  <div className="text-sm text-muted-foreground">ZukaCoin</div>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-r from-secondary/10 to-primary/10">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <DollarSign className="h-8 w-8 text-secondary" />
+                <div>
+                  <div className="text-2xl font-bold">${userData?.walletBalance || 0}</div>
+                  <div className="text-sm text-muted-foreground">Wallet</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Create Ad Form */}
         {showCreateForm && (
@@ -200,9 +236,22 @@ export default function Adverts() {
                 />
               </div>
 
+              <div>
+                <Label htmlFor="payment_method">Payment Method</Label>
+                <Select value={newAd.payment_method} onValueChange={(value) => setNewAd({ ...newAd, payment_method: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="zukacoin">ZukaCoin (ZC {userData?.zukaBalance || 0})</SelectItem>
+                    <SelectItem value="wallet">Wallet (${userData?.walletBalance || 0})</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="budget">Budget ($)</Label>
+                  <Label htmlFor="budget">Budget ({newAd.payment_method === 'zukacoin' ? 'ZC' : '$'})</Label>
                   <Input
                     id="budget"
                     type="number"

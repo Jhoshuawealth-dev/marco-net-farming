@@ -43,11 +43,39 @@ export default function Social() {
   const [loading, setLoading] = useState(true);
   const [newPost, setNewPost] = useState('');
   const [isPosting, setIsPosting] = useState(false);
+  const [dailyLimits, setDailyLimits] = useState({ posts: 0, likes: 0, comments: 0 });
 
   useEffect(() => {
     fetchPosts();
     fetchAds();
+    fetchDailyLimits();
   }, []);
+
+  const fetchDailyLimits = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('daily_limits' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('limit_date', new Date().toISOString().split('T')[0])
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (data) {
+        const limitData = data as any;
+        setDailyLimits({
+          posts: limitData.posts_created || 0,
+          likes: limitData.likes_given || 0,
+          comments: limitData.comments_given || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching daily limits:', error);
+    }
+  };
 
   const fetchPosts = async () => {
     try {
@@ -85,6 +113,7 @@ export default function Social() {
           profiles:user_id (display_name)
         `)
         .eq('status', 'active')
+        .eq('approval_status', 'approved')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -116,6 +145,15 @@ export default function Social() {
   const handleCreatePost = async () => {
     if (!newPost.trim() || !user) return;
 
+    if (dailyLimits.posts >= 2) {
+      toast({
+        title: "Daily Limit Reached",
+        description: "You can only create 2 posts per day.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsPosting(true);
     try {
       const { error } = await supabase
@@ -127,12 +165,16 @@ export default function Social() {
 
       if (error) throw error;
 
+      // Increment daily limit
+      await supabase.rpc('increment_daily_limit', { limit_type: 'post' });
+
       toast({
         title: "Post Created!",
-        description: "Your post has been shared with the community."
+        description: "You earned 50 ZC! Your post has been shared."
       });
 
       setNewPost('');
+      setDailyLimits(prev => ({ ...prev, posts: prev.posts + 1 }));
       await fetchPosts();
     } catch (error) {
       console.error('Error creating post:', error);
@@ -146,8 +188,37 @@ export default function Social() {
     }
   };
 
-  const handleEngagement = async (postId: string, type: 'like' | 'comment' | 'share') => {
+  const handleEngagement = async (postId: string, type: 'like' | 'comment' | 'share', postOwnerId: string) => {
     if (!user) return;
+
+    // Check if user is engaging with their own post
+    if (postOwnerId === user.id) {
+      toast({
+        title: "Not Allowed",
+        description: "You cannot engage with your own posts.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check daily limits for likes and comments
+    if (type === 'like' && dailyLimits.likes >= 10) {
+      toast({
+        title: "Daily Limit Reached",
+        description: "You can only like 10 posts per day.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (type === 'comment' && dailyLimits.comments >= 10) {
+      toast({
+        title: "Daily Limit Reached",
+        description: "You can only comment on 10 posts per day.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -160,9 +231,19 @@ export default function Social() {
 
       if (error) throw error;
 
+      // Increment daily limit for likes and comments
+      if (type === 'like' || type === 'comment') {
+        await supabase.rpc('increment_daily_limit', { limit_type: type });
+        setDailyLimits(prev => ({
+          ...prev,
+          [type === 'like' ? 'likes' : 'comments']: prev[type === 'like' ? 'likes' : 'comments'] + 1
+        }));
+      }
+
+      const reward = type === 'like' ? 20 : type === 'comment' ? 20 : 100;
       toast({
         title: "Reward Earned!",
-        description: `You earned ${type === 'like' ? '50' : type === 'comment' ? '20' : '100'} credits for ${type}!`
+        description: `You earned ${reward} ZC for ${type}!`
       });
     } catch (error) {
       console.error('Error recording engagement:', error);
@@ -259,28 +340,28 @@ export default function Social() {
                 variant="ghost" 
                 size="sm" 
                 className="text-muted-foreground hover:text-red-500"
-                onClick={() => handleEngagement(item.id, 'like')}
+                onClick={() => handleEngagement(item.id, 'like', item.user_id)}
               >
                 <Heart className="h-4 w-4 mr-1" />
-                Like (+50)
+                Like (+20 ZC)
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 className="text-muted-foreground hover:text-blue-500"
-                onClick={() => handleEngagement(item.id, 'comment')}
+                onClick={() => handleEngagement(item.id, 'comment', item.user_id)}
               >
                 <MessageCircle className="h-4 w-4 mr-1" />
-                Comment (+20)
+                Comment (+20 ZC)
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 className="text-muted-foreground hover:text-green-500"
-                onClick={() => handleEngagement(item.id, 'share')}
+                onClick={() => handleEngagement(item.id, 'share', item.user_id)}
               >
                 <Share2 className="h-4 w-4 mr-1" />
-                Share (+100)
+                Share (+100 ZC)
               </Button>
             </div>
           </div>
@@ -300,27 +381,27 @@ export default function Social() {
           </div>
         </div>
 
-        {/* Stats Bar */}
+        {/* Daily Limits Stats */}
         <div className="grid grid-cols-3 gap-4">
           <Card className="text-center">
             <CardContent className="pt-4">
-              <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-bold">0</div>
-              <div className="text-sm text-muted-foreground">Followers</div>
+              <Plus className="h-6 w-6 mx-auto mb-2 text-primary" />
+              <div className="text-lg font-bold">{dailyLimits.posts}/2</div>
+              <div className="text-sm text-muted-foreground">Posts Today</div>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
               <Heart className="h-6 w-6 mx-auto mb-2 text-red-500" />
-              <div className="text-lg font-bold">0</div>
-              <div className="text-sm text-muted-foreground">Total Likes</div>
+              <div className="text-lg font-bold">{dailyLimits.likes}/10</div>
+              <div className="text-sm text-muted-foreground">Likes Given</div>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4">
-              <Trophy className="h-6 w-6 mx-auto mb-2 text-secondary" />
-              <div className="text-lg font-bold">0</div>
-              <div className="text-sm text-muted-foreground">Reward Points</div>
+              <MessageCircle className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+              <div className="text-lg font-bold">{dailyLimits.comments}/10</div>
+              <div className="text-sm text-muted-foreground">Comments Given</div>
             </CardContent>
           </Card>
         </div>
@@ -340,13 +421,18 @@ export default function Social() {
               onChange={(e) => setNewPost(e.target.value)}
               rows={3}
             />
-            <Button 
-              onClick={handleCreatePost}
-              disabled={!newPost.trim() || isPosting}
-              className="w-full"
-            >
-              {isPosting ? "Posting..." : "Share Post"}
-            </Button>
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Posts today: {dailyLimits.posts}/2 • Earn 50 ZC per post
+              </div>
+              <Button 
+                onClick={handleCreatePost}
+                disabled={!newPost.trim() || isPosting || dailyLimits.posts >= 2}
+                className="w-auto"
+              >
+                {isPosting ? "Posting..." : "Share Post"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
