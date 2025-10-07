@@ -49,6 +49,47 @@ export default function Social() {
     fetchPosts();
     fetchAds();
     fetchDailyLimits();
+
+    // Subscribe to real-time updates for approved posts
+    const postsChannel = supabase
+      .channel('posts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts',
+          filter: 'approval_status=eq.approved'
+        },
+        (payload) => {
+          console.log('Post change detected:', payload);
+          fetchPosts(); // Refresh posts when a post is approved
+        }
+      )
+      .subscribe();
+
+    // Subscribe to real-time updates for approved ads
+    const adsChannel = supabase
+      .channel('ads-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'adverts',
+          filter: 'approval_status=eq.approved'
+        },
+        (payload) => {
+          console.log('Ad change detected:', payload);
+          fetchAds(); // Refresh ads when an ad is approved
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(postsChannel);
+      supabase.removeChannel(adsChannel);
+    };
   }, []);
 
   const fetchDailyLimits = async () => {
