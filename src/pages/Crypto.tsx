@@ -1,32 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Pickaxe, Zap, Clock, TrendingUp, Coins, Award } from "lucide-react";
 import { Layout } from "@/components/Layout";
+import { useMining } from "@/hooks/useMining";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
+
+interface MiningRecord {
+  id: string;
+  mined_amount: number;
+  date_mined: string;
+  created_at: string;
+}
 
 export default function Crypto() {
-  const [isMining, setIsMining] = useState(false);
-  const [miningProgress, setMiningProgress] = useState(0);
+  const { user } = useAuth();
+  const { isMining, miningProgress, startMining } = useMining();
   const [dailyMined, setDailyMined] = useState(0);
+  const [miningHistory, setMiningHistory] = useState<MiningRecord[]>([]);
 
-  const startMining = () => {
-    setIsMining(true);
-    setMiningProgress(0);
-    
-    const interval = setInterval(() => {
-      setMiningProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsMining(false);
-          setDailyMined(prev => prev + 2.5);
-          return 0;
+  useEffect(() => {
+    if (!user) return;
+
+    // Fetch today's mining total
+    const fetchDailyMined = async () => {
+      const { data, error } = await supabase
+        .from('mining_records')
+        .select('mined_amount')
+        .eq('user_id', user.id)
+        .eq('date_mined', new Date().toISOString().split('T')[0]);
+
+      if (!error && data) {
+        const total = data.reduce((sum, record) => sum + record.mined_amount, 0);
+        setDailyMined(total);
+      }
+    };
+
+    // Fetch mining history (last 10 sessions)
+    const fetchMiningHistory = async () => {
+      const { data, error } = await supabase
+        .from('mining_records')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error && data) {
+        setMiningHistory(data);
+      }
+    };
+
+    fetchDailyMined();
+    fetchMiningHistory();
+
+    // Subscribe to new mining records
+    const channel = supabase
+      .channel('mining-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'mining_records',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          fetchDailyMined();
+          fetchMiningHistory();
         }
-        return prev + 2;
-      });
-    }, 100);
-  };
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   return (
     <Layout>
@@ -131,11 +183,34 @@ export default function Crypto() {
             <CardTitle className="text-lg">Recent Mining Sessions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                Your mining history will appear here
-              </p>
-            </div>
+            {miningHistory.length > 0 ? (
+              <div className="space-y-3">
+                {miningHistory.map((record) => (
+                  <div key={record.id} className="flex items-center justify-between p-3 rounded-lg bg-accent/10 border border-accent/20">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-accent/20">
+                        <Coins className="h-4 w-4 text-accent" />
+                      </div>
+                      <div>
+                        <div className="font-medium">+{record.mined_amount.toFixed(2)} ZC</div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(new Date(record.created_at), 'MMM dd, yyyy - HH:mm')}
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="bg-accent/20 text-accent border-0">
+                      Completed
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  Your mining history will appear here
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
