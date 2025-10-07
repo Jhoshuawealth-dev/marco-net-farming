@@ -346,7 +346,14 @@ export default function Social() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-semibold">{item.profiles?.display_name || 'Anonymous'}</div>
+                <div className="flex items-center gap-2">
+                  <div className="font-semibold">{item.profiles?.display_name || 'Anonymous'}</div>
+                  {item.user_id === user?.id && (
+                    <Badge variant={item.approval_status === 'approved' ? 'default' : 'secondary'}>
+                      {item.approval_status === 'approved' ? 'Approved' : 'Pending'}
+                    </Badge>
+                  )}
+                </div>
                 <div className="text-sm text-muted-foreground">
                   {new Date(item.created_at).toLocaleDateString()}
                 </div>

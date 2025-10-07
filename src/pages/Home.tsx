@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, Coins, TrendingUp, Users, Pickaxe, DollarSign } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Wallet, Coins, TrendingUp, Users, Pickaxe, DollarSign, User } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { useUserData } from "@/hooks/useUserData";
 import { useNavigate } from "react-router-dom";
@@ -23,10 +24,37 @@ export default function Home() {
   const walletBalance = userData?.walletBalance || 0;
   const zukaBalance = userData?.zukaBalance || 0;
   const currency = userData?.currencyCode || "USD";
+  const zukaToUsd = (zukaBalance / 1000) * 1.5; // 1000 ZC = $1.5 USD
 
   return (
     <Layout>
       <div className="space-y-6">
+        {/* Profile Section */}
+        <Card className="bg-gradient-secondary text-secondary-foreground border-0">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border-2 border-white/20">
+                <AvatarFallback className="text-2xl bg-white/10">
+                  {userData?.fullName?.[0]?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold">{userData?.fullName || 'User'}</h2>
+                <p className="text-sm opacity-90">{userData?.country || 'Unknown Country'}</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="bg-white/10 border-white/20 hover:bg-white/20"
+                onClick={() => navigate('/profile')}
+              >
+                <User className="h-4 w-4 mr-1" />
+                Profile
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
@@ -73,7 +101,10 @@ export default function Home() {
                   {zukaBalance.toLocaleString()} ZC
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  ≈ ${(zukaBalance * 0.45).toFixed(2)} USD
+                  ≈ ${zukaToUsd.toFixed(2)} USD
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  1000 ZC = $1.5 USD
                 </p>
               </div>
               <Button 
