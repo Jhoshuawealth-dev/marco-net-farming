@@ -45,7 +45,41 @@ export default function Adverts() {
 
   useEffect(() => {
     fetchUserAds();
-  }, [user]);
+    
+    if (!user) return;
+    
+    // Subscribe to real-time updates for ad approvals
+    const adsChannel = supabase
+      .channel('user-ads-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'adverts',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload: any) => {
+          console.log('Ad change detected:', payload);
+          
+          // Show notification if ad was just approved
+          if (payload.new?.approval_status === 'approved' && payload.old?.approval_status === 'pending') {
+            toast({
+              title: "🎉 Advertisement Approved!",
+              description: "Your ad is now active and showing in the social feed!",
+              duration: 5000
+            });
+          }
+          
+          fetchUserAds();
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(adsChannel);
+    };
+  }, [user, toast]);
 
   const fetchUserAds = async () => {
     if (!user) return;

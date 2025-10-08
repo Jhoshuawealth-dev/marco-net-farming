@@ -44,6 +44,7 @@ export default function Social() {
   const [newPost, setNewPost] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const [dailyLimits, setDailyLimits] = useState({ posts: 0, likes: 0, comments: 0 });
+  const [trackedAds, setTrackedAds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchPosts();
@@ -56,13 +57,23 @@ export default function Social() {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
           table: 'posts',
-          filter: 'approval_status=eq.approved'
+          filter: `user_id=eq.${user?.id}`
         },
-        (payload) => {
+        (payload: any) => {
           console.log('Post change detected:', payload);
+          
+          // Show notification if user's post was just approved
+          if (payload.new?.approval_status === 'approved' && payload.old?.approval_status === 'pending') {
+            toast({
+              title: "🎉 Post Approved!",
+              description: "Your post has been approved and is now visible to everyone. You earned 50 ZC!",
+              duration: 5000
+            });
+          }
+          
           fetchPosts(); // Refresh posts when a post is approved
         }
       )
@@ -74,13 +85,23 @@ export default function Social() {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
           table: 'adverts',
-          filter: 'approval_status=eq.approved'
+          filter: `user_id=eq.${user?.id}`
         },
-        (payload) => {
+        (payload: any) => {
           console.log('Ad change detected:', payload);
+          
+          // Show notification if user's ad was just approved
+          if (payload.new?.approval_status === 'approved' && payload.old?.approval_status === 'pending') {
+            toast({
+              title: "🎉 Ad Approved!",
+              description: "Your advertisement has been approved and is now showing in the feed!",
+              duration: 5000
+            });
+          }
+          
           fetchAds(); // Refresh ads when an ad is approved
         }
       )
@@ -230,7 +251,7 @@ export default function Social() {
 
       toast({
         title: "Post Submitted!",
-        description: "Your post is pending admin approval. You'll earn 50 ZC once approved."
+        description: "Your post is pending admin approval. You'll earn 50 ZC once approved. Typical approval time: 24-48 hours."
       });
 
       setNewPost('');
@@ -312,6 +333,9 @@ export default function Social() {
 
   const trackAdImpression = async (adId: string) => {
     if (!user) return;
+    
+    // Prevent duplicate impressions in the same session
+    if (trackedAds.has(adId)) return;
 
     try {
       // Increment the ad daily impression count
@@ -325,6 +349,9 @@ export default function Social() {
           user_id: user.id,
           impression_type: 'view'
         });
+      
+      // Mark this ad as tracked in this session
+      setTrackedAds(prev => new Set([...prev, adId]));
     } catch (error) {
       console.error('Error tracking ad impression:', error);
     }
@@ -334,8 +361,10 @@ export default function Social() {
     const isAd = 'isAd' in item;
     
     if (isAd) {
-      // Track impression when ad is rendered
-      trackAdImpression(item.id);
+      // Track impression only if not already tracked in this session
+      if (!trackedAds.has(item.id)) {
+        trackAdImpression(item.id);
+      }
       
       return (
         <Card key={`ad-${item.id}`} className="shadow-md border-2 border-yellow-200 bg-yellow-50/50">
