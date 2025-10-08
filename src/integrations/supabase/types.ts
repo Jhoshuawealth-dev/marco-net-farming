@@ -583,41 +583,32 @@ export type Database = {
       }
       social_engagement: {
         Row: {
-          comments: number
           created_at: string | null
+          engagement_type: string
           id: string
-          likes: number
-          post_id: string | null
-          shares: number
-          type: string | null
+          post_id: string
           user_id: string
         }
         Insert: {
-          comments?: number
           created_at?: string | null
+          engagement_type: string
           id?: string
-          likes?: number
-          post_id?: string | null
-          shares?: number
-          type?: string | null
+          post_id: string
           user_id: string
         }
         Update: {
-          comments?: number
           created_at?: string | null
+          engagement_type?: string
           id?: string
-          likes?: number
-          post_id?: string | null
-          shares?: number
-          type?: string | null
+          post_id?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "social_engagement_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "social_engagement_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "posts"
             referencedColumns: ["id"]
           },
         ]

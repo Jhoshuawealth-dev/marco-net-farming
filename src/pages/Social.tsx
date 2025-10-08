@@ -307,10 +307,21 @@ export default function Social() {
         .insert({
           post_id: postId,
           user_id: user.id,
-          type: type
+          engagement_type: type
         });
 
-      if (error) throw error;
+      if (error) {
+        // Check if already engaged (duplicate key error)
+        if (error.code === '23505') {
+          toast({
+            title: "Already Engaged",
+            description: `You've already ${type}d this post!`,
+            variant: "destructive"
+          });
+          return;
+        }
+        throw error;
+      }
 
       // Increment daily limit for likes and comments
       if (type === 'like' || type === 'comment') {
@@ -321,13 +332,21 @@ export default function Social() {
         }));
       }
 
+      // Reward is automatically added by database trigger
       const reward = type === 'like' ? 20 : type === 'comment' ? 20 : 100;
       toast({
         title: "Reward Earned!",
         description: `You earned ${reward} ZC for ${type}!`
       });
+
+      await fetchPosts(); // Refresh posts
     } catch (error) {
       console.error('Error recording engagement:', error);
+      toast({
+        title: "Error",
+        description: "Failed to record engagement",
+        variant: "destructive"
+      });
     }
   };
 
