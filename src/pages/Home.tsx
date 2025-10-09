@@ -29,29 +29,6 @@ export default function Home() {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Compact Profile Corner */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 bg-gradient-secondary/20 px-4 py-3 rounded-lg border border-border/50">
-            <Avatar className="h-10 w-10 border-2 border-primary/20">
-              <AvatarFallback className="text-sm bg-primary/10 text-primary font-semibold">
-                {userData?.fullName?.[0]?.toUpperCase() || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-xs text-muted-foreground">Welcome</p>
-              <h2 className="text-sm font-semibold">{userData?.fullName || 'User'}</h2>
-            </div>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate('/profile')}
-          >
-            <User className="h-4 w-4 mr-1" />
-            Profile
-          </Button>
-        </div>
-
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
@@ -170,24 +147,33 @@ export default function Home() {
         {/* Quick Actions */}
         <div className="space-y-3">
           <h3 className="text-lg font-semibold">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <Button 
-              className="h-auto py-4 bg-gradient-secondary"
+              variant="outline"
+              className="h-auto py-4"
+              onClick={() => navigate('/profile')}
+            >
+              <div className="text-center">
+                <User className="h-6 w-6 mx-auto mb-1" />
+                <div className="text-sm font-medium">Profile</div>
+              </div>
+            </Button>
+            <Button 
+              className="h-auto py-4 bg-gradient-secondary text-secondary-foreground"
               onClick={() => navigate('/investment')}
             >
               <div className="text-center">
                 <TrendingUp className="h-6 w-6 mx-auto mb-1" />
-                <div className="text-sm font-medium">New Investment</div>
+                <div className="text-sm font-medium">Investment</div>
               </div>
             </Button>
             <Button 
-              variant="outline" 
-              className="h-auto py-4"
+              className="h-auto py-4 bg-primary text-primary-foreground"
               onClick={() => navigate('/social')}
             >
               <div className="text-center">
                 <Users className="h-6 w-6 mx-auto mb-1" />
-                <div className="text-sm font-medium">Social Hub</div>
+                <div className="text-sm font-medium">Social</div>
               </div>
             </Button>
           </div>
