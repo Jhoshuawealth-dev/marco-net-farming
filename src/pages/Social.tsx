@@ -189,37 +189,50 @@ export default function Social() {
 
   // Combine posts and ads for feed display (Facebook-style)
   useEffect(() => {
-    const combinedFeed = [];
-    let adIndex = 0;
-    
-    // For each ad, we'll show it up to 5 times throughout the feed
-    const adsToShow: (Ad & { isAd: boolean })[] = [];
-    ads.forEach(ad => {
-      // Each ad appears 5 times in different positions
-      for (let i = 0; i < 5; i++) {
-        adsToShow.push({ ...ad, isAd: true });
-      }
-    });
-    
-    // Mix posts and ads - insert an ad every 3-4 posts
-    for (let i = 0; i < posts.length; i++) {
-      combinedFeed.push(posts[i]);
+    const filterAdsWithDailyLimit = async () => {
+      const combinedFeed = [];
+      let adIndex = 0;
       
-      // Insert ad after every 3 posts, but only if we have ads to show
-      if ((i + 1) % 3 === 0 && adIndex < adsToShow.length) {
+      // PHASE 4 FIX: Filter ads that haven't reached daily limit
+      const adsToShow: (Ad & { isAd: boolean })[] = [];
+      
+      for (const ad of ads) {
+        try {
+          const { data, error } = await supabase.rpc('can_show_ad_today', { ad_uuid: ad.id });
+          
+          if (!error && data === true) {
+            // Only add ads that can still be shown today (under 5 impressions)
+            for (let i = 0; i < 5; i++) {
+              adsToShow.push({ ...ad, isAd: true });
+            }
+          }
+        } catch (error) {
+          console.error('Error checking ad limit:', error);
+        }
+      }
+    
+      // Mix posts and ads - insert an ad every 3-4 posts
+      for (let i = 0; i < posts.length; i++) {
+        combinedFeed.push(posts[i]);
+        
+        // Insert ad after every 3 posts, but only if we have ads to show
+        if ((i + 1) % 3 === 0 && adIndex < adsToShow.length) {
+          combinedFeed.push(adsToShow[adIndex]);
+          adIndex++;
+        }
+      }
+      
+      // Add remaining ads at the end if any
+      while (adIndex < adsToShow.length) {
         combinedFeed.push(adsToShow[adIndex]);
         adIndex++;
       }
-    }
+      
+      setFeedItems(combinedFeed);
+      setLoading(false);
+    };
     
-    // Add remaining ads at the end if any
-    while (adIndex < adsToShow.length) {
-      combinedFeed.push(adsToShow[adIndex]);
-      adIndex++;
-    }
-    
-    setFeedItems(combinedFeed);
-    setLoading(false);
+    filterAdsWithDailyLimit();
   }, [posts, ads]);
 
   const handleCreatePost = async () => {
@@ -380,9 +393,20 @@ export default function Social() {
     const isAd = 'isAd' in item;
     
     if (isAd) {
-      // Track impression only if not already tracked in this session
+      // PHASE 4 FIX: Track impression only if not already tracked AND check daily limit
       if (!trackedAds.has(item.id)) {
-        trackAdImpression(item.id);
+        // Check if this ad can be shown today before tracking
+        supabase.rpc('can_show_ad_today', { ad_uuid: item.id }).then(({ data, error }) => {
+          if (error) {
+            console.error('Error checking ad daily limit:', error);
+            return;
+          }
+          
+          // Only track if the ad hasn't reached its daily limit
+          if (data === true) {
+            trackAdImpression(item.id);
+          }
+        });
       }
       
       return (
