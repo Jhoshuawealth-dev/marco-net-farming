@@ -10,36 +10,37 @@ import { useSocialStats } from "@/hooks/useSocialStats";
 import { useTodayProfit } from "@/hooks/useTodayProfit";
 import { useCurrencyRates } from "@/hooks/useCurrencyRates";
 import { useNavigate } from "react-router-dom";
-
 export default function Home() {
   const navigate = useNavigate();
-  const { userData, loading } = useUserData();
-  const { stats: investmentStats } = useInvestmentStats();
-  const { stats: socialStats } = useSocialStats();
-  const { profit: todayProfit } = useTodayProfit();
-  const { convertFromUSD } = useCurrencyRates();
+  const {
+    userData,
+    loading
+  } = useUserData();
+  const {
+    stats: investmentStats
+  } = useInvestmentStats();
+  const {
+    stats: socialStats
+  } = useSocialStats();
+  const {
+    profit: todayProfit
+  } = useTodayProfit();
+  const {
+    convertFromUSD
+  } = useCurrencyRates();
   const [showLocalCurrency, setShowLocalCurrency] = useState(false);
-
   if (loading) {
-    return (
-      <Layout>
+    return <Layout>
         <div className="flex items-center justify-center h-[60vh]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      </Layout>
-    );
+      </Layout>;
   }
-
-  const walletBalanceDisplay = showLocalCurrency && userData?.currencyCode !== 'USD'
-    ? convertFromUSD(userData?.walletBalance || 0, userData?.currencyCode || 'USD')
-    : userData?.walletBalance || 0;
-
+  const walletBalanceDisplay = showLocalCurrency && userData?.currencyCode !== 'USD' ? convertFromUSD(userData?.walletBalance || 0, userData?.currencyCode || 'USD') : userData?.walletBalance || 0;
   const currencySymbol = showLocalCurrency ? userData?.currencyCode : 'USD';
   const zcToUSD = 0.01; // 1 ZC = $0.01 USD
   const zcValueUSD = (userData?.zukaBalance || 0) * zcToUSD;
-
-  return (
-    <Layout>
+  return <Layout>
       <div className="space-y-6">
         {/* Personalized Welcome Banner */}
         <Card className="bg-gradient-primary border-0 shadow-glow">
@@ -61,10 +62,7 @@ export default function Home() {
         </Card>
 
         {/* Wallet Balance Card with Currency Toggle */}
-        <Card 
-          className="bg-gradient-secondary text-secondary-foreground border-0 shadow-glow cursor-pointer transition-transform hover:scale-[1.02]"
-          onClick={() => setShowLocalCurrency(!showLocalCurrency)}
-        >
+        <Card className="bg-gradient-secondary text-secondary-foreground border-0 shadow-glow cursor-pointer transition-transform hover:scale-[1.02]" onClick={() => setShowLocalCurrency(!showLocalCurrency)}>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span>Wallet Balance</span>
@@ -100,10 +98,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <Button 
-              className="w-full bg-gradient-primary text-white"
-              onClick={() => navigate('/crypto')}
-            >
+            <Button className="w-full bg-gradient-primary text-white" onClick={() => navigate('/crypto')}>
               Mine More ZC
             </Button>
           </CardContent>
@@ -179,31 +174,21 @@ export default function Home() {
 
         {/* Quick Actions */}
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold">Quick Actions</h3>
+          <h3 className="text-lg font-semibold text-gray-950">Quick Actions</h3>
           <div className="grid grid-cols-3 gap-3">
-            <Button 
-              variant="outline"
-              className="h-auto py-4"
-              onClick={() => navigate('/profile')}
-            >
+            <Button variant="outline" onClick={() => navigate('/profile')} className="h-auto py-4 bg-slate-700 hover:bg-slate-600">
               <div className="text-center">
                 <User className="h-6 w-6 mx-auto mb-1" />
                 <div className="text-sm font-medium">Profile</div>
               </div>
             </Button>
-            <Button 
-              className="h-auto py-4 bg-gradient-secondary text-secondary-foreground"
-              onClick={() => navigate('/investment')}
-            >
+            <Button className="h-auto py-4 bg-gradient-secondary text-secondary-foreground" onClick={() => navigate('/investment')}>
               <div className="text-center">
                 <TrendingUp className="h-6 w-6 mx-auto mb-1" />
                 <div className="text-sm font-medium">Investment</div>
               </div>
             </Button>
-            <Button 
-              className="h-auto py-4 bg-primary text-primary-foreground"
-              onClick={() => navigate('/social')}
-            >
+            <Button className="h-auto py-4 bg-primary text-primary-foreground" onClick={() => navigate('/social')}>
               <div className="text-center">
                 <Users className="h-6 w-6 mx-auto mb-1" />
                 <div className="text-sm font-medium">Social</div>
@@ -212,6 +197,5 @@ export default function Home() {
           </div>
         </div>
       </div>
-    </Layout>
-  );
+    </Layout>;
 }
