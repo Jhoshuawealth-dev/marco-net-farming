@@ -13,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { User, Mail, Phone, MapPin, Calendar, Briefcase, Globe, Settings, Shield, Users, FileText } from 'lucide-react';
+import { useAdminRole } from '@/hooks/useAdminRole';
+import { Link } from 'react-router-dom';
 
 interface Profile {
   id: string;
@@ -36,6 +38,7 @@ interface Profile {
 
 const Profile = () => {
   const { user } = useAuth();
+  const { isAdmin } = useAdminRole();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -164,9 +167,19 @@ const Profile = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Profile</h1>
-          <p className="text-muted-foreground">Manage your account settings and preferences</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+            <p className="text-muted-foreground">Manage your account settings and preferences</p>
+          </div>
+          {isAdmin && (
+            <Button asChild variant="outline">
+              <Link to="/admin">
+                <Shield className="mr-2 h-4 w-4" />
+                Admin Dashboard
+              </Link>
+            </Button>
+          )}
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

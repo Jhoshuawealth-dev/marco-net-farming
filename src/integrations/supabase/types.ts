@@ -123,6 +123,36 @@ export type Database = {
           },
         ]
       }
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: []
+      }
       ads: {
         Row: {
           ad_type: string | null
@@ -133,7 +163,7 @@ export type Database = {
           id: string
           spent: number | null
           status: string | null
-          target_age_range: unknown | null
+          target_age_range: unknown
           target_country: string[] | null
           user_id: string | null
         }
@@ -146,7 +176,7 @@ export type Database = {
           id?: string
           spent?: number | null
           status?: string | null
-          target_age_range?: unknown | null
+          target_age_range?: unknown
           target_country?: string[] | null
           user_id?: string | null
         }
@@ -159,7 +189,7 @@ export type Database = {
           id?: string
           spent?: number | null
           status?: string | null
-          target_age_range?: unknown | null
+          target_age_range?: unknown
           target_country?: string[] | null
           user_id?: string | null
         }
@@ -613,6 +643,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           country: string
@@ -663,22 +717,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_show_ad_today: {
-        Args: { ad_uuid: string }
-        Returns: boolean
-      }
-      can_view_profile: {
-        Args: { profile_user_id: string }
-        Returns: boolean
-      }
+      can_show_ad_today: { Args: { ad_uuid: string }; Returns: boolean }
+      can_view_profile: { Args: { profile_user_id: string }; Returns: boolean }
       check_daily_engagement_limit: {
         Args: { engagement_type: string }
         Returns: boolean
       }
-      check_daily_post_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      check_daily_post_limit: { Args: never; Returns: boolean }
       filter_profile_data: {
         Args: { profile_row: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: {
@@ -701,22 +746,33 @@ export type Database = {
           user_id: string
           website: string | null
         }
+        SetofOptions: {
+          from: "profiles"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
-      increment_ad_impression: {
-        Args: { ad_uuid: string }
-        Returns: undefined
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      increment_ad_impression: { Args: { ad_uuid: string }; Returns: undefined }
       increment_daily_limit: {
         Args: { limit_type: string }
         Returns: undefined
       }
-      reward_for_action: {
-        Args: { action: string }
-        Returns: number
-      }
+      reward_for_action: { Args: { action: string }; Returns: number }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -843,6 +899,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

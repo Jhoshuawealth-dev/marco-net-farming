@@ -15,7 +15,9 @@ import Learn from "./pages/Learn";
 import Investment from "./pages/Investment";
 import Adverts from "./pages/Adverts";
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import { AdminRoute } from "./components/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +78,11 @@ const AppContent = () => {
       <Route path="/investment" element={<Investment />} />
       <Route path="/adverts" element={<Adverts />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/admin" element={
+        <AdminRoute>
+          <Admin />
+        </AdminRoute>
+      } />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
