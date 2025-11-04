@@ -19,6 +19,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const handleSignOut = async () => {
     await signOut();
+    navigate('/');
   };
 
   return (
