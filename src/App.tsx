@@ -16,6 +16,7 @@ import Investment from "./pages/Investment";
 import Adverts from "./pages/Adverts";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import AdminAuth from "./pages/AdminAuth";
 import NotFound from "./pages/NotFound";
 import { AdminRoute } from "./components/AdminRoute";
 
@@ -77,12 +78,13 @@ const AppContent = () => {
       <Route path="/learn" element={<Learn />} />
       <Route path="/investment" element={<Investment />} />
       <Route path="/adverts" element={<Adverts />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/admin" element={
-        <AdminRoute>
-          <Admin />
-        </AdminRoute>
-      } />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/admin/login" element={<AdminAuth />} />
+            <Route path="/admin" element={
+              <AdminRoute>
+                <Admin />
+              </AdminRoute>
+            } />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
