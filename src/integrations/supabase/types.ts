@@ -717,6 +717,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_delete_user: {
+        Args: { _reason: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_update_user_balance: {
+        Args: {
+          _reason: string
+          _user_id: string
+          _wallet_change: number
+          _zuka_change: number
+        }
+        Returns: undefined
+      }
+      admin_update_verification_status: {
+        Args: { _status: string; _user_id: string }
+        Returns: undefined
+      }
       can_show_ad_today: { Args: { ad_uuid: string }; Returns: boolean }
       can_view_profile: { Args: { profile_user_id: string }; Returns: boolean }
       check_daily_engagement_limit: {

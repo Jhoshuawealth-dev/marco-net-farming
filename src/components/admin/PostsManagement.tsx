@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, XCircle, Clock, Image } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Image, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Post {
@@ -123,6 +123,31 @@ const PostsManagement = () => {
     }
   };
 
+  const handleDelete = async (postId: string) => {
+    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
+
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Post deleted successfully',
+      });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete post',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const pendingPosts = posts.filter(p => p.approval_status === 'pending');
   const approvedPosts = posts.filter(p => p.approval_status === 'approved');
   const rejectedPosts = posts.filter(p => p.approval_status === 'rejected');
@@ -218,12 +243,19 @@ const PostsManagement = () => {
                         {post.approval_status !== 'rejected' && (
                           <Button
                             size="sm"
-                            variant="destructive"
+                            variant="outline"
                             onClick={() => handleReject(post.id)}
                           >
                             Reject
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(post.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

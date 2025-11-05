@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { TrendingUp, DollarSign, Eye } from 'lucide-react';
+import { TrendingUp, DollarSign, Eye, Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface Ad {
@@ -100,6 +100,31 @@ const AdsManagement = () => {
       toast({
         title: 'Error',
         description: 'Failed to reject ad',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDelete = async (adId: string) => {
+    if (!confirm('Are you sure you want to delete this ad? This action cannot be undone.')) return;
+
+    try {
+      const { error } = await supabase
+        .from('adverts')
+        .delete()
+        .eq('id', adId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Ad deleted successfully',
+      });
+    } catch (error) {
+      console.error('Error deleting ad:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete ad',
         variant: 'destructive',
       });
     }
@@ -207,12 +232,19 @@ const AdsManagement = () => {
                         {ad.approval_status !== 'rejected' && (
                           <Button
                             size="sm"
-                            variant="destructive"
+                            variant="outline"
                             onClick={() => handleReject(ad.id)}
                           >
                             Reject
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(ad.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
