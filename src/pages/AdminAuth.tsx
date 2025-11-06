@@ -83,32 +83,17 @@ const AdminAuth = () => {
         if (authError) throw authError;
 
         if (authData.user) {
-          // Create user profile for admin
-          const { error: userError } = await supabase
-            .from('users')
-            .insert({
-              id: authData.user.id,
-              email,
-              full_name: fullName,
-              country: 'Admin',
-              currency_code: 'USD',
-            });
+          // Use the secure function to register admin with code verification
+          const { error: regError } = await supabase.rpc('register_admin_with_code', {
+            _user_id: authData.user.id,
+            _email: email,
+            _full_name: fullName,
+            _admin_code: adminCode,
+            _country: 'Admin',
+            _currency_code: 'USD'
+          });
 
-          if (userError && userError.code !== '23505') { // Ignore duplicate key errors
-            throw userError;
-          }
-
-          // Assign admin role
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: authData.user.id,
-              role: 'admin',
-            });
-
-          if (roleError && roleError.code !== '23505') { // Ignore duplicate key errors
-            throw roleError;
-          }
+          if (regError) throw regError;
 
           toast({
             title: "Success",

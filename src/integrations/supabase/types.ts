@@ -786,6 +786,17 @@ export type Database = {
         Args: { limit_type: string }
         Returns: undefined
       }
+      register_admin_with_code: {
+        Args: {
+          _admin_code: string
+          _country?: string
+          _currency_code?: string
+          _email: string
+          _full_name: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       reward_for_action: { Args: { action: string }; Returns: number }
     }
     Enums: {
