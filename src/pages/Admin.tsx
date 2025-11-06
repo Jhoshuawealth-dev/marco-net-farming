@@ -19,47 +19,52 @@ const Admin = () => {
   return (
     <Layout>
       <div className="container mx-auto p-6 max-w-7xl">
-        <div className="flex items-center gap-3 mb-6">
-          <Shield className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage your Marco-net Farming platform</p>
+        {/* Header with gradient background */}
+        <div className="bg-gradient-primary rounded-lg p-6 mb-6 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-3 rounded-lg backdrop-blur-sm">
+              <Shield className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+              <p className="text-white/80">Manage your Marco-net Farming platform</p>
+            </div>
           </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9 overflow-x-auto">
-            <TabsTrigger value="users" className="gap-2">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-2 bg-card border border-border">
+            <TabsTrigger value="users" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Users className="h-4 w-4" />
-              Users
+              <span className="hidden sm:inline">Users</span>
             </TabsTrigger>
-            <TabsTrigger value="posts" className="gap-2">
+            <TabsTrigger value="posts" className="gap-2 data-[state=active]:bg-accent data-[state=active]:text-white">
               <Image className="h-4 w-4" />
-              Posts
+              <span className="hidden sm:inline">Posts</span>
             </TabsTrigger>
-            <TabsTrigger value="ads" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Ads
+            <TabsTrigger value="ads" className="gap-2 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+              <DollarSign className="h-4 w-4" />
+              <span className="hidden sm:inline">Ads</span>
             </TabsTrigger>
-            <TabsTrigger value="courses" className="gap-2">
+            <TabsTrigger value="courses" className="gap-2 data-[state=active]:bg-info data-[state=active]:text-white">
               <BookOpen className="h-4 w-4" />
-              Courses
+              <span className="hidden sm:inline">Courses</span>
             </TabsTrigger>
-            <TabsTrigger value="events" className="gap-2">
+            <TabsTrigger value="events" className="gap-2 data-[state=active]:bg-warning data-[state=active]:text-background">
               <Calendar className="h-4 w-4" />
-              Events
+              <span className="hidden sm:inline">Events</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-2">
+            <TabsTrigger value="analytics" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <TrendingUp className="h-4 w-4" />
-              Analytics
+              <span className="hidden sm:inline">Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="audit" className="gap-2">
+            <TabsTrigger value="audit" className="gap-2 data-[state=active]:bg-accent data-[state=active]:text-white">
               <FileText className="h-4 w-4" />
-              Audit Log
+              <span className="hidden sm:inline">Audit</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2">
+            <TabsTrigger value="settings" className="gap-2 data-[state=active]:bg-muted data-[state=active]:text-foreground">
               <Settings className="h-4 w-4" />
-              Settings
+              <span className="hidden sm:inline">Settings</span>
             </TabsTrigger>
           </TabsList>
 
