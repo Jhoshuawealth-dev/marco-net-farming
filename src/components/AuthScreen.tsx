@@ -37,7 +37,10 @@ const AuthScreen: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(loginForm.email, loginForm.password);
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
+        email: loginForm.email,
+        password: loginForm.password,
+      });
       
       if (error) {
         toast({
@@ -45,12 +48,38 @@ const AuthScreen: React.FC = () => {
           description: error.message,
           variant: "destructive"
         });
-      } else {
-        toast({
-          title: "Welcome back!",
-          description: "Successfully logged in to Marco-net Farming"
-        });
+        setIsLoading(false);
+        return;
       }
+
+      // Check if user has admin or moderator role
+      if (authData.user) {
+        const { data: isAdmin } = await supabase.rpc('has_role', {
+          _user_id: authData.user.id,
+          _role: 'admin'
+        });
+
+        const { data: isModerator } = await supabase.rpc('has_role', {
+          _user_id: authData.user.id,
+          _role: 'moderator'
+        });
+
+        if (isAdmin || isModerator) {
+          await supabase.auth.signOut();
+          toast({
+            title: "Access Denied",
+            description: "Please use the admin login page to access your account.",
+            variant: "destructive"
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      toast({
+        title: "Welcome back!",
+        description: "Successfully logged in to Marco-net Farming"
+      });
     } catch (error) {
       toast({
         title: "Error",

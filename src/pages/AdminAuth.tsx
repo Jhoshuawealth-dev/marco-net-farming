@@ -43,7 +43,7 @@ const AdminAuth = () => {
           await supabase.auth.signOut();
           toast({
             title: "Access Denied",
-            description: "You don't have admin privileges. Please use the regular user login.",
+            description: "This account does not have admin privileges. Please use the regular user login page.",
             variant: "destructive",
           });
           setLoading(false);
